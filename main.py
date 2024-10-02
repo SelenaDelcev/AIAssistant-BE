@@ -41,7 +41,6 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         os.getenv("CORS_URL"),
-        "https://lemon-ocean-0a311af0f.5.azurestaticapps.net",
         "https://green-water-0c4c41f0f.5.azurestaticapps.net",
         "http://localhost:3000"
     ],
@@ -116,7 +115,6 @@ async def chat_with_ai(
     global thread_name
     message = chat_request.message
     play_audio_response = chat_request.play_audio_response
-    language = chat_request.language
 
     session_id = initialize_session(request, messages, system_prompt)
 
@@ -129,13 +127,6 @@ async def chat_with_ai(
 
     global context
     context = rag_tool_answer(message.content)
-
-    if "sastanak sa nama" in context:
-        link = "https://outlook.office365.com/book/Chatbot@positive.rs/"
-        if language == 'sr': 
-            return {"calendly": context}
-        else:
-             return {"calendly": f"Of course, you can schedule a meeting with us at the following link: <a href='{link}' target='_blank' class='custom-link'>here</a>"}
         
     global prepared_message
     prepared_message = {"role": "user", "content": [{"type": "text", "text": f"""
@@ -337,31 +328,3 @@ async def transcribe_audio(blob: UploadFile = File(...), session_id: str = Form(
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    
-@app.post("/feedback")
-async def receive_feedback(feedback_request: FeedbackRequest):
-    session_id = feedback_request.sessionId
-    status = feedback_request.status
-    feedback_text = feedback_request.feedback
-    last_question = feedback_request.lastQuestion
-    last_answer = feedback_request.lastAnswer
-
-    if not session_id:
-        raise HTTPException(status_code=400, detail="Session ID is required")
-    
-    global context
-    try:
-        with ConversationDatabase() as db:
-            db.insert_feedback(
-                thread_id=thread_name,
-                app_name=app_name,
-                previous_question=last_question,
-                tool_answer=context,
-                given_answer=last_answer,
-                thumbs=status,
-                feedback_text=feedback_text
-            )    
-        return {"detail": "Feedback received successfully"}
-    except Exception as e:
-        logger.error(f"Failed to save feedback: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to save feedback")
