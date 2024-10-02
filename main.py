@@ -135,7 +135,7 @@ async def chat_with_ai(
                 Using the following context, which comes directly from our database:
                 {message.content}
                 All the provided context is relevant and trustworthy, so make sure to base your answer strictly on the information above.
-                Always write in Serbian. Always provide corresponding links from established knowledge base and do NOT generate or suggest any links that do not exist within it. 
+                Always provide corresponding links from established knowledge base and do NOT generate or suggest any links that do not exist within it. 
                 """}]}
         
     # Save the original user message
